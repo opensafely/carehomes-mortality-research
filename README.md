@@ -1,10 +1,6 @@
-# OpenSAFELY Research Template
+# Exploring the Increased Mortality in English Care Homes during the 2020 COVID-19 Pandemic 
 
-This is a template repository for making new OpenSAFELY resarch projects.  Eventually it'll become a framework. To get started, create a new repo using this repo as a template, delete this front matter, and edit the text that follows.
-
-# _title goes here_
-
-This is the code and configuration for our paper, _name goes here_
+This is the repository for our ongoing project "Exploring the Increased Mortality in English Care Homes during the 2020 COVID-19 Pandemic". It is currently a work in progress, but will eventually have links to the study protocol and any outputs that are developed. 
 
 * The paper is [here]()
 * Raw model outputs, including charts, crosstabs, etc, are in `released_analysis_results/`
