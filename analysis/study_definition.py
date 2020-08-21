@@ -19,8 +19,13 @@ study = StudyDefinition(
         "incidence" : 0.2
     },
     # This line defines the study population
-    population=patients.registered_with_one_practice_between(
-        "2020-01-01", "2020-02-01"
+    population=patients.satisfying(
+        """
+        (age >=18) 
+        """,
+        has_follow_up=patients.registered_with_one_practice_between(
+            "2019-01-01", "2020-01-01"
+        ),
     ),
 
     # OUTCOMES,
@@ -71,7 +76,7 @@ study = StudyDefinition(
     # Registered death, any COVID
     ons_covid_death_date=patients.with_these_codes_on_death_certificate(
        covid_death_codelist,
-       on_or_before="2020-06-01",
+       on_or_after="2020-01-01",
        match_only_underlying_cause=False,
        returning="date_of_death",
        date_format="YYYY-MM-DD",
@@ -83,7 +88,7 @@ study = StudyDefinition(
     ## HOUSEHOLD INFORMATION
     # CAREHOME STATUS
     care_home_type=patients.care_home_status_as_of(
-        "2020-02-01",
+        "2020-01-01",
         categorised_as={
             "PC": """
               IsPotentialCareHome
@@ -125,7 +130,7 @@ study = StudyDefinition(
     # The rest of the lines define the covariates with associated GitHub issues
     # https://github.com/ebmdatalab/tpp-sql-notebook/issues/33
     age=patients.age_as_of(
-        "2020-02-01",
+        "2020-01-01",
         return_expectations={
             "rate": "universal",
             "int": {"distribution": "population_ages"},
@@ -140,7 +145,7 @@ study = StudyDefinition(
     ),
     # region - one of NHS England 9 regions
     region=patients.registered_practice_as_of(
-        "2020-02-01",
+        "2020-01-01",
         returning="nuts1_region_name",
         return_expectations={
             "rate": "universal",
@@ -160,7 +165,7 @@ study = StudyDefinition(
     ),
     # # https://github.com/ebmdatalab/tpp-sql-notebook/issues/54
     stp=patients.registered_practice_as_of(
-        "2020-02-01",
+        "2020-01-01",
         returning="stp_code",
         return_expectations={
             "rate": "universal",
@@ -181,7 +186,7 @@ study = StudyDefinition(
         },
     ),
     msoa=patients.registered_practice_as_of(
-        "2020-02-01",
+        "2020-01-01",
         returning="msoa_code",
         return_expectations={
             "rate": "universal",
@@ -189,7 +194,7 @@ study = StudyDefinition(
         },
     ),    
     rural_urban=patients.address_as_of(
-        "2020-03-01",
+        "2020-01-01",
         returning="rural_urban_classification",
         return_expectations={
             "rate": "universal",
@@ -198,7 +203,7 @@ study = StudyDefinition(
     ),
     # # https://github.com/ebmdatalab/tpp-sql-notebook/issues/52
     imd=patients.address_as_of(
-        "2020-02-01",
+        "2020-01-01",
         returning="index_of_multiple_deprivation",
         round_to_nearest=100,
         return_expectations={
@@ -224,3 +229,4 @@ study = StudyDefinition(
         "incidence" : 0.1,
             "date": {"latest": "2020-02-01"}},
     ),
+    )
