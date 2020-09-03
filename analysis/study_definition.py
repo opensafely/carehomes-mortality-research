@@ -83,7 +83,28 @@ study = StudyDefinition(
        return_expectations={"date": {"earliest": "2020-02-01"},
                             "rate" : "exponential_increase"
                             }, 
-    ),   
+    ), 
+
+    # Registered death, primary covid 
+    ons_covid_death_date_main=patients.with_these_codes_on_death_certificate(
+       covid_death_codelist,
+       on_or_after="2020-01-01",
+       match_only_underlying_cause=True,
+       returning="date_of_death",
+       date_format="YYYY-MM-DD",
+       return_expectations={"date": {"earliest": "2020-02-01"},
+                            "rate" : "exponential_increase"
+                            }, 
+    ),     
+
+    ### Any ONS death 
+     ons_death_date=patients.died_from_any_cause(
+        on_or_after="2020-01-01",
+        returning="date_of_death",
+        include_month=True,
+        include_day=True,
+        return_expectations={"date": {"earliest": "2020-01-01"}},
+    ),
 
     ## HOUSEHOLD INFORMATION
     # CAREHOME STATUS
