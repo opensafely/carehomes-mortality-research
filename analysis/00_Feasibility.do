@@ -146,7 +146,7 @@ drop if care_home != 1
 levelsof npractices, local(levels)
 
 foreach l of local levels {
-  count if care_flag == 1 if npractices == `l'
+  count if care_flag == 1 & npractices == `l'
   display r(N)
   summarize care_count_size if npractices == `l'
   display r(sum)
