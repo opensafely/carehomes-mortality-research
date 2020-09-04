@@ -124,6 +124,17 @@ gen care_count_size = household_size
 * Missing if not care home and if not first entry per care home
 replace care_count_size = . if care_flag == . 
 
+levelsof region, local(levels)
+
+foreach l of local levels {
+	
+  count if care_flag == 1 & region == "`l'"
+  display r(N)
+  summarize care_count_size if region == "`l'"
+  display r(sum)
+  
+ }
+
 * Counter for number of GP practices per carehome 
 * Generate a flag for each unique combination of practice and household
 * This will create a flag = 1 for each unique practice within each household 
@@ -146,10 +157,12 @@ drop if care_home != 1
 levelsof npractices, local(levels)
 
 foreach l of local levels {
+	
   count if care_flag == 1 & npractices == `l'
   display r(N)
   summarize care_count_size if npractices == `l'
   display r(sum)
+  
  }
 
 restore 
@@ -388,29 +401,21 @@ cap file close tablecontent
 file open tablecontent using ./$outdir/table5.txt, write text replace
 
 file write tablecontent ("Table 5: Number of care homes and people resident in them by NHS region for OpenSafely population at 1 January 2020") _n 
-
 file write tablecontent ("NHS Region") _tab ("Number of Care Homes") _tab ("Number of Residents") _n
 
-cap prog drop countbyregion
-prog define countbyregion
-syntax, variable(varname) region(string) variable2(varname)
+levelsof region, local(levels)
 
-file write tablecontent ("`region'") _tab 
-quietly count if `variable' == 1 & region == "`region'" 
-file write tablecontent %9.0gc (r(N)) _tab 
-quietly summarize `variable2' if region == "`region'"
-file write tablecontent %9.0gc (r(sum)) _n 
-
-end 
-
-countbyregion, variable(care_flag) region("East Midlands") variable2(care_count_size)
-countbyregion, variable(care_flag) region("East of England") variable2(care_count_size)
-countbyregion, variable(care_flag) region("London") variable2(care_count_size)
-countbyregion, variable(care_flag) region("North East") variable2(care_count_size)
-countbyregion, variable(care_flag) region("North West") variable2(care_count_size)
-countbyregion, variable(care_flag) region("South East") variable2(care_count_size)
-countbyregion, variable(care_flag) region("West Midlands") variable2(care_count_size)
-countbyregion, variable(care_flag) region("Yorkshire and the Humber") variable2(care_count_size)
+foreach l of local levels {
+	
+  file write tablecontent ("`l'") _tab
+  count if care_flag == 1 & region == "`l'"
+  display r(N)
+  file write tablecontent %9.0gc (r(N)) _tab 
+  summarize care_count_size if region == "`l'"
+  display r(sum)
+  file write tablecontent %9.0gc (r(sum)) _n 
+  
+ }
 
 file close tablecontent
 
@@ -433,6 +438,7 @@ drop if care_home != 1
 levelsof npractices, local(levels)
 
 foreach l of local levels {
+	
   file write tablecontent (`l') _tab
   count if care_flag == 1 & npractices == `l'
   display r(N)
@@ -440,6 +446,7 @@ foreach l of local levels {
   summarize care_count_size if npractices == `l'
   display r(sum)
   file write tablecontent %9.0gc (r(sum)) _n 
+  
  }
 
 restore 
