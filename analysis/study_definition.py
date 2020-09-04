@@ -50,14 +50,14 @@ study = StudyDefinition(
         },
     ),
 
-    ### testing positive (SGSS or primary care)
+    ### testing positive (SGSS)
     first_pos_test_sgss=patients.with_test_result_in_sgss(
        pathogen="SARS-CoV-2",
        test_result="positive",
        find_first_match_in_period=True,
        returning="date",
        date_format="YYYY-MM-DD",
-       return_expectations={"date": {"earliest": "2020-03-01"},
+       return_expectations={"date": {"earliest": "2020-01-01"},
                             "rate": "exponential_increase"
        },
     ),
@@ -130,6 +130,7 @@ study = StudyDefinition(
         },
     ),
 
+    # Household ID and Size 
     household_id=patients.household_as_of(
         "2020-02-01",
         returning="pseudo_id",
@@ -144,6 +145,16 @@ study = StudyDefinition(
         returning="household_size",
         return_expectations={
             "int": {"distribution": "normal", "mean": 3, "stddev": 1},
+            "incidence": 1,
+        },
+    ),
+
+    # GP practice ID 
+    practice_id=patients.registered_practice_as_of(
+        "2020-02-01", 
+        returning="pseudo_id", 
+        return_expectations={
+            "int": {"distribution": "normal", "mean": 1000, "stddev": 200},
             "incidence": 1,
         },
     ),
