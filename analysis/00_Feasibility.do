@@ -135,17 +135,10 @@ replace npractices = . if care_home != 1
 
 tab npractices 
 
-* Count number of care homes for each number of practices 
+* Count number of care homes and patients by GP practices covering the care home 
 * Can't figure out a way to do this without creating a carehome level dataset 
+* I do not want to to print anything for levels of households that are not care homes 
 * Repeat this when printing the table below 
-
-preserve 
-drop if care_home != 1 
-duplicates drop household_id, force 
-tab npractices 
-restore 
-
-* Count number of patients in care homes covered by each number of GP practices
 
 preserve 
 drop if care_home != 1 
@@ -153,7 +146,9 @@ drop if care_home != 1
 levelsof npractices, local(levels)
 
 foreach l of local levels {
-  summarize household_size if npractices == `l'
+  count if care_flag == 1 if npractices == `l'
+  display r(N)
+  summarize care_count_size if npractices == `l'
   display r(sum)
  }
 
@@ -442,7 +437,7 @@ foreach l of local levels {
   count if care_flag == 1 & npractices == `l'
   display r(N)
   file write tablecontent %9.0gc (r(N)) _tab 
-  summarize household_size if npractices == `l'
+  summarize care_count_size if npractices == `l'
   display r(sum)
   file write tablecontent %9.0gc (r(sum)) _n 
  }
