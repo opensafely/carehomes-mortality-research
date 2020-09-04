@@ -8,7 +8,7 @@ STATA VERSION: 			16.1
 DESCRIPTION OF FILE: 	Create and output basic tabulations 	
 DATASETS USED: 			input.csv
 DATASETS CREATED: 		N/A
-OTHER OUTPUT: 			table1-7, in analysis/$outdir 							
+OTHER OUTPUT: 			table1-8, in analysis/$outdir 							
 	
 ==============================================================================*/
 
@@ -112,13 +112,60 @@ tab flag, m
 summarize nresidents, detail
 summarize household_size, detail 
 
-* Counter for number of care homes in data
-bysort household_id: gen care_counter = _n == 1 
-replace care_counter = . if care_home != 1 
+* Flag for number of care homes in data
+* Flag first occurence of care home, then count number of flags (by table)
+bysort household_id: gen care_flag = _n == 1 
+* Missing if not care home 
+replace care_flag = . if care_home != 1 
 
-* Counter for number of care home residents in data
+* Number of care home residents in data
+* Want one entry per care home, so that this can be summed by geographic region
 gen care_count_size = household_size
-replace care_count_size = . if care_counter == . 
+* Missing if not care home and if not first entry per care home
+replace care_count_size = . if care_flag == . 
+
+levelsof region, local(levels)
+
+foreach l of local levels {
+	
+  count if care_flag == 1 & region == "`l'"
+  display r(N)
+  summarize care_count_size if region == "`l'"
+  display r(sum)
+  
+ }
+
+* Counter for number of GP practices per carehome 
+* Generate a flag for each unique combination of practice and household
+* This will create a flag = 1 for each unique practice within each household 
+egen tag = tag(practice_id household_id)
+* Sum the number of unique practices, by household 
+egen npractices = total(tag), by(household_id)
+* Missing if not care home 
+replace npractices = . if care_home != 1
+
+tab npractices 
+
+* Count number of care homes and patients by GP practices covering the care home 
+* Can't figure out a way to do this without creating a carehome level dataset 
+* I do not want to to print anything for levels of households that are not care homes 
+* Repeat this when printing the table below 
+
+preserve 
+drop if care_home != 1 
+
+levelsof npractices, local(levels)
+
+foreach l of local levels {
+	
+  count if care_flag == 1 & npractices == `l'
+  display r(N)
+  summarize care_count_size if npractices == `l'
+  display r(sum)
+  
+ }
+
+restore 
 
 * Format and sense check outcome variables 
 
@@ -150,15 +197,10 @@ gen sgss_test_pos = (first_pos_test_sgss		< .)
    The second program then repeates the row for each level of another 
    cat var 
    
-   However, I wanted to print the value label of the second variable, 
-   like a row header. 
-   
-   I therefore called a macro variable in the first program that's only defined 
-   in the second, and in general this is a bit confusing as a set-up.  
-   This is not so neat. Long term I will work to combine these/ 
+   This set up is a little awkward; longer term I'm working on improving this 
+   into a more general framework for generating descriptive tables. 
 
 *******************************************************************************/
-set trace on 
 cap prog drop generaterow
 program define generaterow
 syntax, variable(varname) [level(string)] [condition0(string)] [condition1(string)] [condition2(string)] [condition3(string)]
@@ -323,6 +365,7 @@ tabulatevariable, variable(agegroup) min(1) max(11) missing outcome("ons_death_c
 file close tablecontent
 
 /* Feasibility Table 4========================================================*/ 
+*  Note, current SGSS data received not reliable, propose swapping to other outcome
 bysort agegroup: tab sgss_test_pos care_home_type, m col 
 
 cap file close tablecontent
@@ -358,29 +401,21 @@ cap file close tablecontent
 file open tablecontent using ./$outdir/table5.txt, write text replace
 
 file write tablecontent ("Table 5: Number of care homes and people resident in them by NHS region for OpenSafely population at 1 January 2020") _n 
-
 file write tablecontent ("NHS Region") _tab ("Number of Care Homes") _tab ("Number of Residents") _n
 
-cap prog drop countbyregion
-prog define countbyregion
-syntax, variable(varname) region(string) variable2(varname)
+levelsof region, local(levels)
 
-file write tablecontent ("`region'") _tab 
-quietly count if `variable' == 1 & region == "`region'" 
-file write tablecontent %9.0gc (r(N)) _tab 
-quietly summarize `variable2' if region == "`region'"
-file write tablecontent %9.0gc (r(sum)) _n 
-
-end 
-
-countbyregion, variable(care_counter) region("East Midlands") variable2(care_count_size)
-countbyregion, variable(care_counter) region("East of England") variable2(care_count_size)
-countbyregion, variable(care_counter) region("London") variable2(care_count_size)
-countbyregion, variable(care_counter) region("North East") variable2(care_count_size)
-countbyregion, variable(care_counter) region("North West") variable2(care_count_size)
-countbyregion, variable(care_counter) region("South East") variable2(care_count_size)
-countbyregion, variable(care_counter) region("West Midlands") variable2(care_count_size)
-countbyregion, variable(care_counter) region("Yorkshire and the Humber") variable2(care_count_size)
+foreach l of local levels {
+	
+  file write tablecontent ("`l'") _tab
+  count if care_flag == 1 & region == "`l'"
+  display r(N)
+  file write tablecontent %9.0gc (r(N)) _tab 
+  summarize care_count_size if region == "`l'"
+  display r(sum)
+  file write tablecontent %9.0gc (r(sum)) _n 
+  
+ }
 
 file close tablecontent
 
@@ -389,10 +424,38 @@ file close tablecontent
 
 
 /* Feasibility Table 7========================================================*/ 
-*  Not feasible due to missing practice ID variable 
+
+cap file close tablecontent
+file open tablecontent using ./$outdir/table7.txt, write text replace
+
+file write tablecontent ("Number of care homes and people resident in them according to GP practices covering each care home ") _n 
+
+file write tablecontent ("Number of GP Practices") _tab ("Number of Care Homes") _tab ("Number of Residents") _n
+
+preserve 
+drop if care_home != 1 
+
+levelsof npractices, local(levels)
+
+foreach l of local levels {
+	
+  file write tablecontent (`l') _tab
+  count if care_flag == 1 & npractices == `l'
+  display r(N)
+  file write tablecontent %9.0gc (r(N)) _tab 
+  summarize care_count_size if npractices == `l'
+  display r(sum)
+  file write tablecontent %9.0gc (r(sum)) _n 
+  
+ }
+
+restore 
+
+file close tablecontent
+
 
 /* Feasibility Table 8========================================================*/ 
-* Not feasible as mixedsoftware not yet incorporated 
+* Not feasible due to missing mixedsoftware variable 
 
 * Close log file 
 log close
