@@ -1,0 +1,15 @@
+Table 3: Frequency tabulation of OpenSafely deaths (COVID-19) occurring up until latest date available by age and category of place of residence
+	Total	0	1	2	3	.u
+Age Group
+18-<50	      285 (0.0)	      274 (0.0)	       [REDACTED]        8 (0.7)	       [REDACTED]       [REDACTED]
+50-<55	      241 (0.0)	      225 (0.0)	        [REDACTED]       10 (2.2)	       [REDACTED]       [REDACTED]
+55-<60	      434 (0.0)	      403 (0.0)	        6 (0.8)	       25 (3.2)	        [REDACTED]      [REDACTED]
+60-<65	      641 (0.1)	      585 (0.1)	       13 (1.4)	       42 (3.7)	       [REDACTED]        [REDACTED]
+65-<70	      857 (0.1)	      744 (0.1)	       22 (1.6)	       86 (5.1)	       [REDACTED]       [REDACTED]
+70-<75	    1,491 (0.1)	    1,195 (0.1)	      102 (3.5)	      183 (5.5)	       [REDACTED]	        [REDACTED]
+75-<80	    2,254 (0.3)	    1,625 (0.2)	      190 (4.0)	      424 (8.2)	       [REDACTED]     [REDACTED]
+80-<85	    3,286 (0.6)	    2,202 (0.4)	      423 (4.9)	      626 (7.9)	       [REDACTED]	        [REDACTED]
+85-<90	    3,591 (1.1)	    2,259 (0.7)	      557 (4.4)	      739 (7.1)	       [REDACTED]       [REDACTED]
+90-<95	    2,643 (1.8)	    1,444 (1.2)	      508 (4.2)	      667 (7.4)	       [REDACTED]     [REDACTED]
+95+	    1,139 (2.5)	      544 (1.6)	      275 (4.1)	      307 (6.5)	       [REDACTED]        [REDACTED]
+missing	        0 (0.0)	        0 (0.0)	        0 (0.0)	        0 (0.0)	      [REDACTED]      [REDACTED]

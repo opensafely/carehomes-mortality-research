@@ -1,0 +1,15 @@
+Table 4: Frequency tabulation of OpenSafely test positive cases for COVID-19 occurring up until latest date available by age and category of place of residence
+	Total	0	1	2	3	.u
+Age Group
+18-<50	   34,941 (0.4)	   34,800 (0.4)	       23 (0.9)	       52 (4.3)	       [REDACTED]	      [REDACTED]
+50-<55	    6,505 (0.5)	    6,454 (0.5)	       14 (2.1)	       31 (6.8)	        [REDACTED]	      [REDACTED]
+55-<60	    5,981 (0.5)	    5,877 (0.4)	       23 (3.1)	       75 (9.7)	       [REDACTED])	       [REDACTED]
+60-<65	    4,575 (0.4)	    4,425 (0.4)	       26 (2.8)	      114 (9.9)	       [REDACTED]	     [REDACTED]
+65-<70	    3,368 (0.3)	    3,080 (0.3)	       86 (6.4)	      191 (11.3)	        [REDACTED]	       [REDACTED]
+70-<75	    3,906 (0.4)	    3,279 (0.3)	      235 (8.0)	      370 (11.1)	       [REDACTED]    [REDACTED]
+75-<80	    4,784 (0.6)	    3,694 (0.5)	      400 (8.5)	      656 (12.7)	       [REDACTED]	      [REDACTED]
+80-<85	    6,176 (1.2)	    4,389 (0.8)	      797 (9.2)	      942 (11.9)	       [REDACTED]	        [REDACTED]
+85-<90	    6,163 (1.9)	    4,003 (1.3)	    1,028 (8.1)	    1,082 (10.4)	     [REDACTED]	     [REDACTED]
+90-<95	    4,108 (2.8)	    2,358 (1.9)	      839 (6.9)	      866 (9.6)	       [REDACTED]        [REDACTED]
+95+	    1,660 (3.7)	      829 (2.5)	      405 (6.0)	      407 (8.6)	       19 (7.4)	        0 (0.0)
+missing	        0 (0.0)	        0 (0.0)	        0 (0.0)	        0 (0.0)	        0 (0.0)	        0 (0.0)
