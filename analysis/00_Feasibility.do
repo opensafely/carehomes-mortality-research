@@ -28,6 +28,11 @@ drop if age < 18
 noi di "DROP AGE MISSING:"
 drop if age == . 
 
+* Drop those with missing household identifier 
+* This is identified by using household size == 0 
+
+drop if household_size == 0 
+
 * Create categorised age
 recode age 18/49.9999 = 1 /// 
            50/54.9999 = 2 ///

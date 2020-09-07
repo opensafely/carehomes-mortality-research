@@ -1,0 +1,18 @@
+Number of care homes and people resident in them according to GP practices covering each care home 
+Number of GP Practices	Number of Care Homes	Number of Residents
+1	   13,159	  1079950
+2	    1,911	  536,329
+3	      781	  334,979
+4	      342	  185,803
+5	      151	  387,763
+6	       63	   45,996
+7	       42	   27,122
+8	       22	   21,359
+9	       13	   16,173
+10	        [REDACTED]	  [REDACTED]
+11	       [REDACTED]	   [REDACTED]
+12	       [REDACTED]	    [REDACTED]
+13	        [REDACTED]	  [REDACTED]
+14	        [REDACTED]	     [REDACTED]
+22	       [REDACTED]	      [REDACTED]
+24	       [REDACTED]	       [REDACTED]
