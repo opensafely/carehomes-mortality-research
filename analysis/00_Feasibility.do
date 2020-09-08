@@ -28,6 +28,9 @@ drop if age < 18
 noi di "DROP AGE MISSING:"
 drop if age == . 
 
+* Invalid household ID 
+drop if household_size == 0 
+
 * Create categorised age
 recode age 18/49.9999 = 1 /// 
            50/54.9999 = 2 ///
@@ -122,7 +125,7 @@ replace care_flag = . if care_home != 1
 * Want one entry per care home, so that this can be summed by geographic region
 gen care_count_size = household_size
 * Missing if not care home and if not first entry per care home
-replace care_count_size = . if care_flag == . 
+replace care_count_size = . if care_flag != 1
 
 levelsof region, local(levels)
 

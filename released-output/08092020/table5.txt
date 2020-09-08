@@ -1,0 +1,11 @@
+Table 5: Number of care homes and people resident in them by NHS region for OpenSafely population at 1 January 2020
+NHS Region	Number of Care Homes	Number of Residents
+East	    3,474	   23,159
+East Midlands	    2,858	   18,792
+London	      375	    2,396
+North East	      737	    4,465
+North West	    1,707	   10,154
+South East	    1,391	    8,639
+South West	    2,643	   17,131
+West Midlands	      679	    3,195
+Yorkshire and The Humber	    2,515	   14,513
