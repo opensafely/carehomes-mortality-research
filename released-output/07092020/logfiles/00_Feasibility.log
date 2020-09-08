@@ -1,0 +1,1656 @@
+--------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  E:\anna\carehomes-mortality-research\analysis\logfiles/00_Feasibility.log
+  log type:  text
+ opened on:   7 Sep 2020, 17:10:08
+
+. 
+. /* Data management============================================================*/ 
+. *  Preliminary data management to generate descriptives 
+. 
+. * Check population excludes children and people with missing age 
+. 
+. noi di "DROP AGE <18:"
+DROP AGE <18:
+
+. drop if age < 18 
+(0 observations deleted)
+
+. 
+. noi di "DROP AGE MISSING:"
+DROP AGE MISSING:
+
+. drop if age == . 
+(0 observations deleted)
+
+. 
+. * Drop those with missing household identifier 
+. * This is identified by using household size == 0 
+. 
+. drop if household_size == 0 
+(11,532,226 observations deleted)
+
+. 
+. * Create categorised age
+. recode age 18/49.9999 = 1 /// 
+>            50/54.9999 = 2 ///
+>                    55/59.9999 = 3 ///
+>                60/64.9999 = 4 ///
+>                    65/69.9999 = 5 ///
+>                    70/74.9999 = 6 ///
+>                    75/79.9999 = 7 ///
+>                80/84.9999 = 8 ///
+>                    85/89.9999 = 9 ///
+>                    90/94.9999 = 10 ///
+>                    95/max = 11, gen(agegroup) 
+(16418317 differences between age and agegroup)
+
+. 
+. label define agegroup   1 "18-<50" ///
+>                                                 2 "50-<55" ///
+>                                                 3 "55-<60" ///
+>                                                 4 "60-<65" ///
+>                                                 5 "65-<70" ///
+>                                                 6 "70-<75" ///
+>                                                 7 "75-<80" ///
+>                                                 8 "80-<85" ///
+>                                                 9 "85-<90" ///
+>                                                 10 "90-<95" ///
+>                                                 11 "95+"
+
+.                                                 
+. label values agegroup agegroup
+
+. 
+. tab agegroup, m
+
+  RECODE of |
+        age |      Freq.     Percent        Cum.
+------------+-----------------------------------
+     18-<50 |  8,712,556       53.07       53.07
+     50-<55 |  1,377,522        8.39       61.46
+     55-<60 |  1,328,401        8.09       69.55
+     60-<65 |  1,143,758        6.97       76.51
+     65-<70 |  1,027,437        6.26       82.77
+     70-<75 |  1,036,127        6.31       89.08
+     75-<80 |    736,657        4.49       93.57
+     80-<85 |    534,832        3.26       96.83
+     85-<90 |    329,309        2.01       98.83
+     90-<95 |    146,970        0.90       99.73
+        95+ |     44,748        0.27      100.00
+------------+-----------------------------------
+      Total | 16,418,317      100.00
+
+. label variable agegroup "Age Group"
+
+. 
+. * Format Care Home Variables
+. gen care_home_num = 1 if care_home_type == "PC"
+(16,364,188 missing values generated)
+
+. replace care_home_num = 2 if care_home_type == "PN"
+(45,802 real changes made)
+
+. replace care_home_num = 3 if care_home_type == "PS"
+(2,395 real changes made)
+
+. replace care_home_num = 0 if care_home_type == "U"
+(16,296,749 real changes made)
+
+. replace care_home_num = .u if care_home_type == ""
+(19,242 real changes made, 19,242 to missing)
+
+. 
+. tab care_home_num, missing
+
+care_home_n |
+         um |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 | 16,296,749       99.26       99.26
+          1 |     54,129        0.33       99.59
+          2 |     45,802        0.28       99.87
+          3 |      2,395        0.01       99.88
+         .u |     19,242        0.12      100.00
+------------+-----------------------------------
+      Total | 16,418,317      100.00
+
+. 
+. * create labels
+. label define carehome 1 "Care Home"    /// 
+>                                           2 "Nursing Home" ///
+>                                           3 "Care or Nursing Home" /// 
+>                                           0 "Private Home" /// 
+>                                           .u "Unknown"
+
+. 
+. * apply labels and double check variable creation 
+. label values care_home_num carehome 
+
+. tab care_home_num care_home_type 
+
+                     |               care_home_type
+       care_home_num |        PC         PN         PS          U |     Total
+---------------------+--------------------------------------------+----------
+        Private Home |         0          0          0 16,296,749 |16,296,749 
+           Care Home |    54,129          0          0          0 |    54,129 
+        Nursing Home |         0     45,802          0          0 |    45,802 
+Care or Nursing Home |         0          0      2,395          0 |     2,395 
+---------------------+--------------------------------------------+----------
+               Total |    54,129     45,802      2,395 16,296,749 |16,399,075 
+
+. 
+. * replace with the numeric variable 
+. drop care_home_type 
+
+. rename care_home_num care_home_type 
+
+. label variable care_home_type "Property Type"
+
+. 
+. gen care_home = 1 if care_home_type == 1 | care_home_type == 2 | care_home_type == 3 
+(16,315,991 missing values generated)
+
+. replace care_home = 0 if care_home_type == 0 
+(16,296,749 real changes made)
+
+. replace care_home = .u if care_home_type == .u 
+(19,242 real changes made, 19,242 to missing)
+
+. 
+. label define anycarehome 1 "Yes" /// 
+>                                              0 "No" /// 
+>                                                  .u "Unknown"
+
+.                                                  
+. label values care_home anycarehome 
+
+. label variable care_home "Care or Nursing Home"
+
+. 
+. * Generate count of residents per care home 
+. * This should just be the household size for the care home 
+. label variable household_size "Household Size"
+
+. 
+. * Check this by generating count 
+. egen nresidents = total(age >= 18), by(household_id) 
+
+. replace nresidents = . if care_home != 1 
+(16,315,991 real changes made, 16,315,991 to missing)
+
+. 
+. gen flag = (nresidents != household_size)
+
+. 
+. * might be different for households with children, but should be the same in care homes
+. replace flag = . if care_home != 1 
+(16,315,991 real changes made, 16,315,991 to missing)
+
+. 
+. tab flag, m
+
+       flag |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |    101,686        0.62        0.62
+          1 |        640        0.00        0.62
+          . | 16,315,991       99.38      100.00
+------------+-----------------------------------
+      Total | 16,418,317      100.00
+
+. 
+. summarize nresidents, detail
+
+                         nresidents
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            1              1
+ 5%            1              1
+10%            2              1       Obs             102,326
+25%            8              1       Sum of Wgt.     102,326
+
+50%           20                      Mean           25.87767
+                        Largest       Std. Dev.      41.82332
+75%           34            555
+90%           49            555       Variance        1749.19
+95%           60            555       Skewness       10.18952
+99%           91            555       Kurtosis       128.3408
+
+. summarize household_size, detail 
+
+                       Household Size
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            1              1
+ 5%            1              1
+10%            1              1       Obs          16,418,317
+25%            2              1       Sum of Wgt.    16418317
+
+50%            2                      Mean           5.462814
+                        Largest       Std. Dev.      52.47189
+75%            4           2590
+90%            5           2590       Variance       2753.299
+95%            7           2590       Skewness       30.64789
+99%           17           2590       Kurtosis       1178.918
+
+. 
+. * Flag for number of care homes in data
+. * Flag first occurence of care home, then count number of flags (by table)
+. bysort household_id: gen care_flag = _n == 1 
+
+. * Missing if not care home 
+. replace care_flag = . if care_home != 1 
+(16,315,991 real changes made, 16,315,991 to missing)
+
+. 
+. * Number of care home residents in data
+. * Want one entry per care home, so that this can be summed by geographic region
+. gen care_count_size = household_size
+
+. * Missing if not care home and if not first entry per care home
+. replace care_count_size = . if care_flag == . 
+(16,315,991 real changes made, 16,315,991 to missing)
+
+. 
+. levelsof region, local(levels)
+`"East"' `"East Midlands"' `"London"' `"North East"' `"North West"' `"South East"' `"South West"' `"West Midla
+> nds"' `"Yorkshire and The Humber"'
+
+. 
+. foreach l of local levels {
+  2.         
+.   count if care_flag == 1 & region == "`l'"
+  3.   display r(N)
+  4.   summarize care_count_size if region == "`l'"
+  5.   display r(sum)
+  6.   
+.  }
+  3,491
+3491
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |     23,073    26.56659    20.49861          1        106
+612971
+  2,867
+2867
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |     18,552    22.63567     17.1787          1         89
+419937
+  383
+383
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |      2,900    128.4572    199.4619          1        555
+372526
+  741
+741
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |      4,413    22.73669    17.90227          1         70
+100337
+  1,686
+1686
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |      9,974    21.64959    17.70773          1        100
+215933
+  1,407
+1407
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |      8,622     21.4173     16.3451          1         79
+184660
+  2,653
+2653
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |     17,024    22.71082    16.76401          1         79
+386629
+  676
+676
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |      3,116    19.87291    18.12994          1         71
+61924
+  2,508
+2508
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |     14,367    20.06675    15.74118          1         76
+288299
+
+. 
+. * Counter for number of GP practices per carehome 
+. * Generate a flag for each unique combination of practice and household
+. * This will create a flag = 1 for each unique practice within each household 
+. egen tag = tag(practice_id household_id)
+
+. * Sum the number of unique practices, by household 
+. egen npractices = total(tag), by(household_id)
+
+. * Missing if not care home 
+. replace npractices = . if care_home != 1
+(16,315,991 real changes made, 16,315,991 to missing)
+
+. 
+. tab npractices 
+
+ npractices |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          1 |     55,374       54.12       54.12
+          2 |     21,150       20.67       74.78
+          3 |     11,876       11.61       86.39
+          4 |      6,218        6.08       92.47
+          5 |      3,807        3.72       96.19
+          6 |      1,455        1.42       97.61
+          7 |        959        0.94       98.55
+          8 |        628        0.61       99.16
+          9 |        430        0.42       99.58
+         10 |[REDACTED]
+         11 |[REDACTED]
+         12 |[REDACTED]
+         13 |[REDACTED]
+         14 |[REDACTED]
+         22 |[REDACTED]
+         24 |[REDACTED]
+------------+-----------------------------------
+      Total |    102,326      100.00
+
+. 
+. summarize household_size if npractice == 2543
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+household_~e |          0
+
+. 
+. * Count number of care homes and patients by GP practices covering the care home 
+. * Can't figure out a way to do this without creating a carehome level dataset 
+. * I do not want to to print anything for levels of households that are not care homes 
+. * Repeat this when printing the table below 
+. 
+. preserve 
+
+. drop if care_home != 1 
+(16,315,991 observations deleted)
+
+. 
+. levelsof npractices, local(levels)
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 22 24
+
+. 
+. foreach l of local levels {
+  2.         
+.   count if care_flag == 1 & npractices == `l'
+  3.   display r(N)
+  4.   summarize care_count_size if npractices == `l'
+  5.   display r(sum)
+  6.   
+.  }
+  13,159
+13159
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |     55,374    19.50284    17.14767          1         83
+1079950
+  1,911
+1911
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |     21,150    25.35835    19.38522          2        133
+536329
+  781
+781
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |     11,876    28.20638    18.37963          3        100
+334979
+  342
+342
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |      6,218    29.88147    19.65714          4        105
+185803
+  151
+151
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |      3,807    101.8553    179.4271          5        555
+387763
+  63
+63
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |      1,455    31.61237    23.13832          7        106
+45996
+  42
+42
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |        959    28.28154    14.90113          8         72
+27122
+  22
+22
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |        628    34.01115    11.92848         11         55
+21359
+  13
+13
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |        430    37.61163    15.67161         11         66
+16173
+  7
+7
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |        [REDACTED]
+7187
+  4
+4
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |        [REDACTED]
+2929
+  1
+1
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |         [REDACTED]
+780
+  2
+2
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |         [REDACTED]
+2000
+  1
+1
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |         [REDACTED]
+702
+  0
+0
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |         [REDACTED]
+61
+  0
+0
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |         [REDACTED]
+38
+
+. 
+. restore 
+
+. 
+. * Format and sense check outcome variables 
+. 
+. foreach var of varlist  ons_covid_death_date ///
+>                                                 ons_death_date          ///
+>                                                 ons_covid_death_date_main ///
+>                                                 first_pos_test_sgss ///
+>                                                 {
+  2.                                                 
+.         confirm string variable `var'
+  3.         rename `var' `var'_dstr
+  4.         gen `var' = date(`var'_dstr, "YMD")
+  5.         drop `var'_dstr
+  6.         format `var' %td 
+  7.         
+. }
+(16,401,455 missing values generated)
+(16,314,818 missing values generated)
+(16,402,675 missing values generated)
+(16,336,150 missing values generated)
+
+. 
+. gen ons_death_any = (ons_death_date             < .)
+
+. gen ons_death_covid_main = (ons_covid_death_date_main           < .)
+
+. gen ons_death_covid = (ons_covid_death_date             < .)
+
+. gen sgss_test_pos = (first_pos_test_sgss                < .)
+
+. 
+. 
+. /* Programs for outputting tables=============================================== 
+>    from K Baskharan, generic code to output one row of table as txt file 
+>    
+>    This can probably be improved because the set-up is a little awkward
+>    The first program prints a single row for each level of a cat var 
+>    The second program then repeates the row for each level of another 
+>    cat var 
+>    
+>    This set up is a little awkward; longer term I'm working on improving this 
+>    into a more general framework for generating descriptive tables. 
+> 
+> *******************************************************************************/
+. cap prog drop generaterow
+
+. program define generaterow
+  1. syntax, variable(varname) [level(string)] [condition0(string)] [condition1(string)] [condition2(string)] 
+> [condition3(string)]
+  2.         
+.         if ("`level'" != "") { 
+  3.                         local vlab: label `variable' `level'
+  4.                         file write tablecontent ("`vlab'") _tab 
+  5.                         }
+  6.         else {
+  7.                         file write tablecontent ("missing") _tab
+  8.                         }
+  9.         
+.         quietly cou `condition0'
+ 10.         local overalldenom=r(N)
+ 11.         quietly cou if `variable' `condition2' `condition3'
+ 12.         local colpct = 100*(r(N)/`overalldenom')
+ 13.         file write tablecontent %9.0gc (r(N))  (" (") %3.1f (`colpct') (")") _tab
+ 14. 
+.         quietly cou if care_home_type == 0 `condition1'
+ 15.         local rowdenom = r(N)
+ 16.         quietly cou if care_home_type == 0 & `variable' `condition2' `condition3'
+ 17.         local pct = 100*(r(N)/`rowdenom') 
+ 18.         file write tablecontent %9.0gc (r(N)) (" (") %3.1f (`pct') (")") _tab
+ 19. 
+.         quietly cou if care_home_type == 1 `condition1'
+ 20.         local rowdenom = r(N)
+ 21.         quietly cou if care_home_type == 1 & `variable' `condition2' `condition3'
+ 22.         local pct = 100*(r(N)/`rowdenom')
+ 23.         file write tablecontent %9.0gc (r(N)) (" (") %3.1f  (`pct') (")") _tab
+ 24. 
+.         quietly cou if care_home_type == 2 `condition1'
+ 25.         local rowdenom = r(N)
+ 26.         quietly cou if care_home_type == 2 & `variable' `condition2' `condition3'
+ 27.         local pct = 100*(r(N)/`rowdenom')
+ 28.         file write tablecontent %9.0gc (r(N)) (" (") %3.1f  (`pct') (")") _tab
+ 29.         
+.         quietly cou if care_home_type == 3 `condition1'
+ 30.         local rowdenom = r(N)
+ 31.         quietly cou if care_home_type == 3 & `variable' `condition2' `condition3'
+ 32.         local pct = 100*(r(N)/`rowdenom')
+ 33.         file write tablecontent %9.0gc (r(N)) (" (") %3.1f  (`pct') (")") _tab
+ 34. 
+. 
+.         quietly cou if care_home_type >= . `condition1'
+ 35.         local rowdenom = r(N)
+ 36.         quietly cou if care_home_type >= . & `variable' `condition2' `condition3'
+ 37.         local pct = 100*(r(N)/`rowdenom')
+ 38.         file write tablecontent %9.0gc (r(N)) (" (") %3.1f (`pct') (")") _n
+ 39.         
+. end
+
+. 
+. ********************************************************************************
+. * Generic code to output one section (varible) within table (calls above)
+. 
+. cap prog drop tabulatevariable
+
+. prog define tabulatevariable
+  1. syntax, variable(varname) min(real) max(real) [missing] [outcome(string)]
+  2. 
+.         local lab: variable label `variable'
+  3.         file write tablecontent ("`lab'") _n 
+  4. 
+.         if ("`outcome'" != "") { 
+  5.                 
+.                 forvalues varlevel = `min'/`max'{ 
+  6.                                 generaterow, variable(`variable') level(`varlevel') condition0("if `varia
+> ble' ==`varlevel'") ///
+>                                                                                                             
+>                             condition1("& `variable' ==`varlevel'")  ///
+>                                                                                                             
+>                             condition2("==`varlevel'")                       ///
+>                                                                                                             
+>                             condition3("& `outcome' == 1")
+  7.                 }                       
+  8.                 if "`missing'"!="" generaterow, variable(`variable') condition2(">=.")
+  9.         } 
+ 10.         
+.         else { 
+ 11.                 
+.                 forvalues varlevel = `min'/`max'{ 
+ 12.                                 generaterow, variable(`variable') level(`varlevel') condition2("==`varlev
+> el'") 
+ 13.                 }       
+ 14.                 if "`missing'"!="" generaterow, variable(`variable') condition2(">=.")
+ 15.         } 
+ 16.         
+. end
+
+. 
+. ********************************************************************************
+. 
+. /* Feasibility Table 1========================================================*/ 
+. tab agegroup care_home_type, m col
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+| column percentage |
++-------------------+
+
+           |                     Property Type
+ Age Group | Private H  Care Home  Nursing H  Care or N    Unknown |     Total
+-----------+-------------------------------------------------------+----------
+    18-<50 | 8,692,755      2,520      1,211         42     16,028 | 8,712,556 
+           |     53.34       4.66       2.64       1.75      83.30 |     53.07 
+-----------+-------------------------------------------------------+----------
+    50-<55 | 1,375,544        658        459         21        840 | 1,377,522 
+           |      8.44       1.22       1.00       0.88       4.37 |      8.39 
+-----------+-------------------------------------------------------+----------
+    55-<60 | 1,326,158        753        776         37        677 | 1,328,401 
+           |      8.14       1.39       1.69       1.54       3.52 |      8.09 
+-----------+-------------------------------------------------------+----------
+    60-<65 | 1,141,124        936      1,150         56        492 | 1,143,758 
+           |      7.00       1.73       2.51       2.34       2.56 |      6.97 
+-----------+-------------------------------------------------------+----------
+    65-<70 | 1,024,013      1,346      1,688         71        319 | 1,027,437 
+           |      6.28       2.49       3.69       2.96       1.66 |      6.26 
+-----------+-------------------------------------------------------+----------
+    70-<75 | 1,029,418      2,929      3,335        178        267 | 1,036,127 
+           |      6.32       5.41       7.28       7.43       1.39 |      6.31 
+-----------+-------------------------------------------------------+----------
+    75-<80 |   726,346      4,727      5,154        253        177 |   736,657 
+           |      4.46       8.73      11.25      10.56       0.92 |      4.49 
+-----------+-------------------------------------------------------+----------
+    80-<85 |   517,666      8,620      7,937        440        169 |   534,832 
+           |      3.18      15.92      17.33      18.37       0.88 |      3.26 
+-----------+-------------------------------------------------------+----------
+    85-<90 |   305,456     12,760     10,366        580        147 |   329,309 
+           |      1.87      23.57      22.63      24.22       0.76 |      2.01 
+-----------+-------------------------------------------------------+----------
+    90-<95 |   125,236     12,169      9,008        461         96 |   146,970 
+           |      0.77      22.48      19.67      19.25       0.50 |      0.90 
+-----------+-------------------------------------------------------+----------
+       95+ |    33,033      6,711      4,718        256         30 |    44,748 
+           |      0.20      12.40      10.30      10.69       0.16 |      0.27 
+-----------+-------------------------------------------------------+----------
+     Total |16,296,749     54,129     45,802      2,395     19,242 |16,418,317 
+           |    100.00     100.00     100.00     100.00     100.00 |    100.00 
+
+. 
+. cap file close tablecontent
+
+. file open tablecontent using ./$outdir/table1.txt, write text replace
+
+. 
+. file write tablecontent ("Table 1: Frequency tabulation of OpenSafely population by age and category of plac
+> e of residence at 1 January 2020") _n
+
+. 
+. * Exposure labels for columns 
+. 
+. local lab0: label care_home_type 0
+
+. local lab1: label care_home_type 1
+
+. local lab2: label care_home_type 2 
+
+. local lab3: label care_home_type 3 
+
+. local labu: label care_home_type .u
+
+. 
+. file write tablecontent _tab ("Total")  _tab ///
+>                                                          ("`lab0'") _tab ///
+>                                                          ("`lab1'") _tab ///
+>                                                          ("`lab2'") _tab ///
+>                                                          ("`lab3'") _tab ///
+>                                                          ("`labu'") _n 
+
+. 
+. tabulatevariable, variable(agegroup) min(1) max(11) missing 
+
+. 
+. file close tablecontent
+
+. 
+. /* Feasibility Table 2========================================================*/ 
+. bysort agegroup: tab ons_death_any care_home_type, m col 
+
+--------------------------------------------------------------------------------------------------------------
+-> agegroup = 18-<50
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+| column percentage |
++-------------------+
+
+ons_death_ |                     Property Type
+       any | Private H  Care Home  Nursing H  Care or N    Unknown |     Total
+-----------+-------------------------------------------------------+----------
+         0 | 8,690,149      2,508      1,175         42     16,022 | 8,709,896 
+           |     99.97      99.52      97.03     100.00      99.96 |     99.97 
+-----------+-------------------------------------------------------+----------
+         1 |     2,606         12         36          0          6 |     2,660 
+           |      0.03       0.48       2.97       0.00       0.04 |      0.03 
+-----------+-------------------------------------------------------+----------
+     Total | 8,692,755      2,520      1,211         42     16,028 | 8,712,556 
+           |    100.00     100.00     100.00     100.00     100.00 |    100.00 
+
+--------------------------------------------------------------------------------------------------------------
+-> agegroup = 50-<55
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+| column percentage |
++-------------------+
+
+[REDACTED]| 
+
+--------------------------------------------------------------------------------------------------------------
+-> agegroup = 55-<60
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+| column percentage |
++-------------------+
+
+[REDACTED]| 
+
+--------------------------------------------------------------------------------------------------------------
+-> agegroup = 60-<65
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+| column percentage |
++-------------------+
+[REDACTED]| 
+--------------------------------------------------------------------------------------------------------------
+-> agegroup = 65-<70
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+| column percentage |
++-------------------+
+[REDACTED]| 
+
+--------------------------------------------------------------------------------------------------------------
+-> agegroup = 70-<75
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+| column percentage |
++-------------------+
+
+ons_death_ |                     Property Type
+       any | Private H  Care Home  Nursing H  Care or N    Unknown |     Total
+-----------+-------------------------------------------------------+----------
+         0 | 1,020,254      2,597      2,703        148        253 | 1,025,955 
+           |     99.11      88.67      81.05      83.15      94.76 |     99.02 
+-----------+-------------------------------------------------------+----------
+         1 |     9,164        332        632         30         14 |    10,172 
+           |      0.89      11.33      18.95      16.85       5.24 |      0.98 
+-----------+-------------------------------------------------------+----------
+     Total | 1,029,418      2,929      3,335        178        267 | 1,036,127 
+           |    100.00     100.00     100.00     100.00     100.00 |    100.00 
+
+--------------------------------------------------------------------------------------------------------------
+-> agegroup = 75-<80
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+| column percentage |
++-------------------+
+
+ons_death_ |                     Property Type
+       any | Private H  Care Home  Nursing H  Care or N    Unknown |     Total
+-----------+-------------------------------------------------------+----------
+         0 |   715,188      3,999      3,904        209        162 |   723,462 
+           |     98.46      84.60      75.75      82.61      91.53 |     98.21 
+-----------+-------------------------------------------------------+----------
+         1 |    11,158        728      1,250         44         15 |    13,195 
+           |      1.54      15.40      24.25      17.39       8.47 |      1.79 
+-----------+-------------------------------------------------------+----------
+     Total |   726,346      4,727      5,154        253        177 |   736,657 
+           |    100.00     100.00     100.00     100.00     100.00 |    100.00 
+
+--------------------------------------------------------------------------------------------------------------
+-> agegroup = 80-<85
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+| column percentage |
++-------------------+
+
+ons_death_ |                     Property Type
+       any | Private H  Care Home  Nursing H  Care or N    Unknown |     Total
+-----------+-------------------------------------------------------+----------
+         0 |   503,790      7,039      5,898        341        144 |   517,212 
+           |     97.32      81.66      74.31      77.50      85.21 |     96.71 
+-----------+-------------------------------------------------------+----------
+         1 |    13,876      1,581      2,039         99         25 |    17,620 
+           |      2.68      18.34      25.69      22.50      14.79 |      3.29 
+-----------+-------------------------------------------------------+----------
+     Total |   517,666      8,620      7,937        440        169 |   534,832 
+           |    100.00     100.00     100.00     100.00     100.00 |    100.00 
+
+--------------------------------------------------------------------------------------------------------------
+-> agegroup = 85-<90
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+| column percentage |
++-------------------+
+
+ons_death_ |                     Property Type
+       any | Private H  Care Home  Nursing H  Care or N    Unknown |     Total
+-----------+-------------------------------------------------------+----------
+         0 |   290,724     10,165      7,527        439        103 |   308,958 
+           |     95.18      79.66      72.61      75.69      70.07 |     93.82 
+-----------+-------------------------------------------------------+----------
+         1 |    14,732      2,595      2,839        141         44 |    20,351 
+           |      4.82      20.34      27.39      24.31      29.93 |      6.18 
+-----------+-------------------------------------------------------+----------
+     Total |   305,456     12,760     10,366        580        147 |   329,309 
+           |    100.00     100.00     100.00     100.00     100.00 |    100.00 
+
+--------------------------------------------------------------------------------------------------------------
+-> agegroup = 90-<95
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+| column percentage |
++-------------------+
+
+ons_death_ |                     Property Type
+       any | Private H  Care Home  Nursing H  Care or N    Unknown |     Total
+-----------+-------------------------------------------------------+----------
+         0 |   114,743      9,385      6,309        363         71 |   130,871 
+           |     91.62      77.12      70.04      78.74      73.96 |     89.05 
+-----------+-------------------------------------------------------+----------
+         1 |    10,493      2,784      2,699         98         25 |    16,099 
+           |      8.38      22.88      29.96      21.26      26.04 |     10.95 
+-----------+-------------------------------------------------------+----------
+     Total |   125,236     12,169      9,008        461         96 |   146,970 
+           |    100.00     100.00     100.00     100.00     100.00 |    100.00 
+
+--------------------------------------------------------------------------------------------------------------
+-> agegroup = 95+
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+| column percentage |
++-------------------+
+
+ons_death_ |                     Property Type
+       any | Private H  Care Home  Nursing H  Care or N    Unknown |     Total
+-----------+-------------------------------------------------------+----------
+         0 |    28,653      4,959      3,171        184         21 |    36,988 
+           |     86.74      73.89      67.21      71.88      70.00 |     82.66 
+-----------+-------------------------------------------------------+----------
+         1 |     4,380      1,752      1,547         72          9 |     7,760 
+           |     13.26      26.11      32.79      28.13      30.00 |     17.34 
+-----------+-------------------------------------------------------+----------
+     Total |    33,033      6,711      4,718        256         30 |    44,748 
+           |    100.00     100.00     100.00     100.00     100.00 |    100.00 
+
+
+. 
+. cap file close tablecontent
+
+. file open tablecontent using ./$outdir/table2.txt, write text replace
+
+. 
+. file write tablecontent ("Table 2: Frequency tabulation of OpenSafely deaths (all causes) occurring up until
+>  latest date available by age and category of place of residence") _n
+
+. 
+. * Exposure labels for columns 
+. 
+. local lab0: label care_home_type 0
+
+. local lab1: label care_home_type 1
+
+. local lab2: label care_home_type 2 
+
+. local lab3: label care_home_type 3 
+
+. local labu: label care_home_type .u
+
+. 
+. file write tablecontent _tab ("Total")  _tab ///
+>                                                          ("`lab0'") _tab ///
+>                                                          ("`lab1'") _tab ///
+>                                                          ("`lab2'") _tab ///
+>                                                          ("`lab3'") _tab ///
+>                                                          ("`labu'") _n 
+
+. 
+. tabulatevariable, variable(agegroup) min(1) max(11) missing outcome("ons_death_any")
+
+. 
+. /* Feasibility Table 3========================================================*/ 
+. bysort agegroup: tab ons_death_covid care_home_type, m col 
+
+--------------------------------------------------------------------------------------------------------------
+-> agegroup = 18-<50
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+| column percentage |
++-------------------+
+
+[REDACTED]| 
+
+--------------------------------------------------------------------------------------------------------------
+-> agegroup = 50-<55
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+| column percentage |
++-------------------+
+[REDACTED]| 
+
+--------------------------------------------------------------------------------------------------------------
+-> agegroup = 55-<60
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+| column percentage |
++-------------------+
+
+ons_death_ |                     Property Type
+     covid | Private H  Care Home  Nursing H  Care or N    Unknown |     Total
+-----------+-------------------------------------------------------+----------
+         0 | 1,325,755        747        751         37        677 | 1,327,967 
+           |     99.97      99.20      96.78     100.00     100.00 |     99.97 
+-----------+-------------------------------------------------------+----------
+         1 |       403          6         25          0          0 |       434 
+           |      0.03       0.80       3.22       0.00       0.00 |      0.03 
+-----------+-------------------------------------------------------+----------
+     Total | 1,326,158        753        776         37        677 | 1,328,401 
+           |    100.00     100.00     100.00     100.00     100.00 |    100.00 
+
+--------------------------------------------------------------------------------------------------------------
+-> agegroup = 60-<65
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+| column percentage |
++-------------------+
+[REDACTED]| 
+
+--------------------------------------------------------------------------------------------------------------
+-> agegroup = 65-<70
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+| column percentage |
++-------------------+
+[REDACTED]| 
+
+--------------------------------------------------------------------------------------------------------------
+-> agegroup = 70-<75
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+| column percentage |
++-------------------+
+
+[REDACTED]| 
+
+--------------------------------------------------------------------------------------------------------------
+-> agegroup = 75-<80
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+| column percentage |
++-------------------+
+
+[REDACTED]| 
+
+--------------------------------------------------------------------------------------------------------------
+-> agegroup = 80-<85
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+| column percentage |
++-------------------+
+[REDACTED]| 
+
+--------------------------------------------------------------------------------------------------------------
+-> agegroup = 85-<90
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+| column percentage |
++-------------------+
+
+ons_death_ |                     Property Type
+     covid | Private H  Care Home  Nursing H  Care or N    Unknown |     Total
+-----------+-------------------------------------------------------+----------
+         0 |   303,197     12,203      9,627        552        139 |   325,718 
+           |     99.26      95.63      92.87      95.17      94.56 |     98.91 
+-----------+-------------------------------------------------------+----------
+         1 |     2,259        557        739         28          8 |     3,591 
+           |      0.74       4.37       7.13       4.83       5.44 |      1.09 
+-----------+-------------------------------------------------------+----------
+     Total |   305,456     12,760     10,366        580        147 |   329,309 
+           |    100.00     100.00     100.00     100.00     100.00 |    100.00 
+
+--------------------------------------------------------------------------------------------------------------
+-> agegroup = 90-<95
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+| column percentage |
++-------------------+
+
+[REDACTED]| 
+
+--------------------------------------------------------------------------------------------------------------
+-> agegroup = 95+
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+| column percentage |
++-------------------+
+[REDACTED]| 
+
+
+. 
+. cap file close tablecontent
+
+. file open tablecontent using ./$outdir/table3.txt, write text replace
+
+. 
+. file write tablecontent ("Table 3: Frequency tabulation of OpenSafely deaths (COVID-19) occurring up until l
+> atest date available by age and category of place of residence") _n
+
+. 
+. * Exposure labels for columns 
+. 
+. local lab0: label care_home_type 0
+
+. local lab1: label care_home_type 1
+
+. local lab2: label care_home_type 2 
+
+. local lab3: label care_home_type 3 
+
+. local labu: label care_home_type .u
+
+. 
+. file write tablecontent _tab ("Total")  _tab ///
+>                                                          ("`lab0'") _tab ///
+>                                                          ("`lab1'") _tab ///
+>                                                          ("`lab2'") _tab ///
+>                                                          ("`lab3'") _tab ///
+>                                                          ("`labu'") _n 
+
+. 
+. tabulatevariable, variable(agegroup) min(1) max(11) missing outcome("ons_death_covid")
+
+. 
+. file close tablecontent
+
+. 
+. /* Feasibility Table 4========================================================*/ 
+. *  Note, current SGSS data received not reliable, propose swapping to other outcome
+. bysort agegroup: tab sgss_test_pos care_home_type, m col 
+
+--------------------------------------------------------------------------------------------------------------
+-> agegroup = 18-<50
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+| column percentage |
++-------------------+
+
+sgss_test_ |                     Property Type
+       pos | Private H  Care Home  Nursing H  Care or N    Unknown |     Total
+-----------+-------------------------------------------------------+----------
+         0 | 8,657,955      2,497      1,159         42     15,962 | 8,677,615 
+           |     99.60      99.09      95.71     100.00      99.59 |     99.60 
+-----------+-------------------------------------------------------+----------
+         1 |    34,800         23         52          0         66 |    34,941 
+           |      0.40       0.91       4.29       0.00       0.41 |      0.40 
+-----------+-------------------------------------------------------+----------
+     Total | 8,692,755      2,520      1,211         42     16,028 | 8,712,556 
+           |    100.00     100.00     100.00     100.00     100.00 |    100.00 
+
+--------------------------------------------------------------------------------------------------------------
+-> agegroup = 50-<55
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+| column percentage |
++-------------------+
+
+[REDACTED]| 
+
+--------------------------------------------------------------------------------------------------------------
+-> agegroup = 55-<60
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+| column percentage |
++-------------------+
+
+[REDACTED]| 
+
+--------------------------------------------------------------------------------------------------------------
+-> agegroup = 60-<65
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+| column percentage |
++-------------------+
+
+[REDACTED]| 
+
+--------------------------------------------------------------------------------------------------------------
+-> agegroup = 65-<70
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+| column percentage |
++-------------------+
+[REDACTED]| 
+
+--------------------------------------------------------------------------------------------------------------
+-> agegroup = 70-<75
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+| column percentage |
++-------------------+
+
+sgss_test_ |                     Property Type
+       pos | Private H  Care Home  Nursing H  Care or N    Unknown |     Total
+-----------+-------------------------------------------------------+----------
+         0 | 1,026,139      2,694      2,965        163        260 | 1,032,221 
+           |     99.68      91.98      88.91      91.57      97.38 |     99.62 
+-----------+-------------------------------------------------------+----------
+         1 |     3,279        235        370         15          7 |     3,906 
+           |      0.32       8.02      11.09       8.43       2.62 |      0.38 
+-----------+-------------------------------------------------------+----------
+     Total | 1,029,418      2,929      3,335        178        267 | 1,036,127 
+           |    100.00     100.00     100.00     100.00     100.00 |    100.00 
+
+--------------------------------------------------------------------------------------------------------------
+-> agegroup = 75-<80
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+| column percentage |
++-------------------+
+
+[REDACTED]| 
+
+--------------------------------------------------------------------------------------------------------------
+-> agegroup = 80-<85
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+| column percentage |
++-------------------+
+
+sgss_test_ |                     Property Type
+       pos | Private H  Care Home  Nursing H  Care or N    Unknown |     Total
+-----------+-------------------------------------------------------+----------
+         0 |   513,277      7,823      6,995        401        160 |   528,656 
+           |     99.15      90.75      88.13      91.14      94.67 |     98.85 
+-----------+-------------------------------------------------------+----------
+         1 |     4,389        797        942         39          9 |     6,176 
+           |      0.85       9.25      11.87       8.86       5.33 |      1.15 
+-----------+-------------------------------------------------------+----------
+     Total |   517,666      8,620      7,937        440        169 |   534,832 
+           |    100.00     100.00     100.00     100.00     100.00 |    100.00 
+
+--------------------------------------------------------------------------------------------------------------
+-> agegroup = 85-<90
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+| column percentage |
++-------------------+
+
+sgss_test_ |                     Property Type
+       pos | Private H  Care Home  Nursing H  Care or N    Unknown |     Total
+-----------+-------------------------------------------------------+----------
+         0 |   301,453     11,732      9,284        542        135 |   323,146 
+           |     98.69      91.94      89.56      93.45      91.84 |     98.13 
+-----------+-------------------------------------------------------+----------
+         1 |     4,003      1,028      1,082         38         12 |     6,163 
+           |      1.31       8.06      10.44       6.55       8.16 |      1.87 
+-----------+-------------------------------------------------------+----------
+     Total |   305,456     12,760     10,366        580        147 |   329,309 
+           |    100.00     100.00     100.00     100.00     100.00 |    100.00 
+
+--------------------------------------------------------------------------------------------------------------
+-> agegroup = 90-<95
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+| column percentage |
++-------------------+
+[REDACTED]| 
+
+--------------------------------------------------------------------------------------------------------------
+-> agegroup = 95+
+
++-------------------+
+| Key               |
+|-------------------|
+|     frequency     |
+| column percentage |
++-------------------+
+
+sgss_test_ |                     Property Type
+       pos | Private H  Care Home  Nursing H  Care or N    Unknown |     Total
+-----------+-------------------------------------------------------+----------
+         0 |    32,204      6,306      4,311        237         30 |    43,088 
+           |     97.49      93.97      91.37      92.58     100.00 |     96.29 
+-----------+-------------------------------------------------------+----------
+         1 |       829        405        407         19          0 |     1,660 
+           |      2.51       6.03       8.63       7.42       0.00 |      3.71 
+-----------+-------------------------------------------------------+----------
+     Total |    33,033      6,711      4,718        256         30 |    44,748 
+           |    100.00     100.00     100.00     100.00     100.00 |    100.00 
+
+
+. 
+. cap file close tablecontent
+
+. file open tablecontent using ./$outdir/table4.txt, write text replace
+
+. 
+. file write tablecontent ("Table 4: Frequency tabulation of OpenSafely test positive cases for COVID-19 occur
+> ring up until latest date available by age and category of place of residence") _n
+
+. 
+. * Exposure labels for columns 
+. 
+. local lab0: label care_home_type 0
+
+. local lab1: label care_home_type 1
+
+. local lab2: label care_home_type 2 
+
+. local lab3: label care_home_type 3 
+
+. local labu: label care_home_type .u
+
+. 
+. file write tablecontent _tab ("Total")  _tab ///
+>                                                          ("`lab0'") _tab ///
+>                                                          ("`lab1'") _tab ///
+>                                                          ("`lab2'") _tab ///
+>                                                          ("`lab3'") _tab ///
+>                                                          ("`labu'") _n 
+
+. 
+. tabulatevariable, variable(agegroup) min(1) max(11) missing outcome("sgss_test_pos")
+
+. 
+. file close tablecontent
+
+. 
+. /* Feasibility Table 5========================================================*/ 
+. *  Not using programs above as different structure required of tables 
+. 
+. * Table initiation 
+. 
+. cap file close tablecontent
+
+. file open tablecontent using ./$outdir/table5.txt, write text replace
+
+. 
+. file write tablecontent ("Table 5: Number of care homes and people resident in them by NHS region for OpenSa
+> fely population at 1 January 2020") _n 
+
+. file write tablecontent ("NHS Region") _tab ("Number of Care Homes") _tab ("Number of Residents") _n
+
+. 
+. levelsof region, local(levels)
+`"East"' `"East Midlands"' `"London"' `"North East"' `"North West"' `"South East"' `"South West"' `"West Midla
+> nds"' `"Yorkshire and The Humber"'
+
+. 
+. foreach l of local levels {
+  2.         
+.   file write tablecontent ("`l'") _tab
+  3.   count if care_flag == 1 & region == "`l'"
+  4.   display r(N)
+  5.   file write tablecontent %9.0gc (r(N)) _tab 
+  6.   summarize care_count_size if region == "`l'"
+  7.   display r(sum)
+  8.   file write tablecontent %9.0gc (r(sum)) _n 
+  9.   
+.  }
+  3,491
+3491
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |     23,073    26.56659    20.49861          1        106
+612971
+  2,867
+2867
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |     18,552    22.63567     17.1787          1         89
+419937
+  383
+383
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |      2,900    128.4572    199.4619          1        555
+372526
+  741
+741
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |      4,413    22.73669    17.90227          1         70
+100337
+  1,686
+1686
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |      9,974    21.64959    17.70773          1        100
+215933
+  1,407
+1407
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |      8,622     21.4173     16.3451          1         79
+184660
+  2,653
+2653
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |     17,024    22.71082    16.76401          1         79
+386629
+  676
+676
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |      3,116    19.87291    18.12994          1         71
+61924
+  2,508
+2508
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |     14,367    20.06675    15.74118          1         76
+288299
+
+. 
+. file close tablecontent
+
+. 
+. /* Feasibility Table 6========================================================*/ 
+. *  Not feasible due to large number (100s) of MSOA 
+. 
+. 
+. /* Feasibility Table 7========================================================*/ 
+. 
+. cap file close tablecontent
+
+. file open tablecontent using ./$outdir/table7.txt, write text replace
+
+. 
+. file write tablecontent ("Number of care homes and people resident in them according to GP practices coverin
+> g each care home ") _n 
+
+. 
+. file write tablecontent ("Number of GP Practices") _tab ("Number of Care Homes") _tab ("Number of Residents"
+> ) _n
+
+. 
+. preserve 
+
+. drop if care_home != 1 
+(16,315,991 observations deleted)
+
+. 
+. levelsof npractices, local(levels)
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 22 24
+
+. 
+. foreach l of local levels {
+  2.         
+.   file write tablecontent (`l') _tab
+  3.   count if care_flag == 1 & npractices == `l'
+  4.   display r(N)
+  5.   file write tablecontent %9.0gc (r(N)) _tab 
+  6.   summarize care_count_size if npractices == `l'
+  7.   display r(sum)
+  8.   file write tablecontent %9.0gc (r(sum)) _n 
+  9.   
+.  }
+  13,159
+13159
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |     55,374    19.50284    17.14767          1         83
+1079950
+  1,911
+1911
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |     21,150    25.35835    19.38522          2        133
+536329
+  781
+781
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |     11,876    28.20638    18.37963          3        100
+334979
+  342
+342
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |      6,218    29.88147    19.65714          4        105
+185803
+  151
+151
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |      3,807    101.8553    179.4271          5        555
+387763
+  63
+63
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |      1,455    31.61237    23.13832          7        106
+45996
+  42
+42
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |        959    28.28154    14.90113          8         72
+27122
+  22
+22
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |        628    34.01115    11.92848         11         55
+21359
+  13
+13
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |        430    37.61163    15.67161         11         66
+16173
+  7
+7
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |       [REDACTED]| 
+7187
+  4
+4
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |       [REDACTED]| 
+2929
+  1
+1
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |        [REDACTED]| 
+780
+  2
+2
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |        [REDACTED]| 
+2000
+  1
+1
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |        [REDACTED]| 
+702
+  0
+0
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |         [REDACTED]| 
+61
+  0
+0
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+care_count~e |        [REDACTED]| 
+38
+
+. 
+. restore 
+
+. 
+. file close tablecontent
+
+. 
+. 
+. /* Feasibility Table 8========================================================*/ 
+. * Not feasible due to missing mixedsoftware variable 
+. 
+. * Close log file 
+. log close
+      name:  <unnamed>
+       log:  E:\anna\carehomes-mortality-research\analysis\logfiles/00_Feasibility.log
+  log type:  text
+ closed on:   7 Sep 2020, 17:26:34
+--------------------------------------------------------------------------------------------------------------
