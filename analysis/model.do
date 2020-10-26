@@ -3,7 +3,7 @@ cd  `c(pwd)'/analysis
 set more off 
 
 
-/* Feasibility Tables=========================================================*/
+/* Feasibility Tables===========================================================
 
 capture mkdir outfiles 
 capture mkdir logfiles 
@@ -12,6 +12,8 @@ global outdir "outfiles"
 global logdir "logfiles"
 
 do "00_Feasibility.do"
+
+==============================================================================*/ 
 
 /* Analyses===================================================================*/
 
