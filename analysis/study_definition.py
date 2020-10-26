@@ -31,7 +31,7 @@ study = StudyDefinition(
 
     # define and select variables 
 
-    # HOUSEHOLD 
+    # HOUSEHOLD INFORMATION
     ## care home status 
     care_home_type=patients.care_home_status_as_of(
         "index_date",
@@ -72,15 +72,7 @@ study = StudyDefinition(
             "incidence": 1,
         },
     ),
-    # gp practice ID 
-    practice_id=patients.registered_practice_as_of(
-        "index_date", 
-        returning="pseudo_id", 
-        return_expectations={
-            "int": {"distribution": "normal", "mean": 1000, "stddev": 200},
-            "incidence": 1,
-        },
-    ),
+    
     # mixed household flag 
     tpp_household=patients.household_as_of(
         "index_date",
@@ -92,7 +84,7 @@ study = StudyDefinition(
     # mixed household percentage 
     tpp_coverage=patients.household_as_of(
         "index_date", 
-        returning="percentage_of_members_with_ehr_data_available", 
+        returning="percentage_of_members_with_data_in_this_backend", 
         return_expectations={
             "int": {"distribution": "normal", "mean": 75, "stddev": 10},
             "incidence": 1,
@@ -128,28 +120,6 @@ study = StudyDefinition(
     ),
 
     # GEOGRAPHICAL VARIABLES 
-    ## sustainaibility and transformation partnership (NHS administrative region) 
-    stp=patients.registered_practice_as_of(
-        "index_date",
-        returning="stp_code",
-        return_expectations={
-            "rate": "universal",
-            "category": {
-                "ratios": {
-                    "STP1": 0.1,
-                    "STP2": 0.1,
-                    "STP3": 0.1,
-                    "STP4": 0.1,
-                    "STP5": 0.1,
-                    "STP6": 0.1,
-                    "STP7": 0.1,
-                    "STP8": 0.1,
-                    "STP9": 0.1,
-                    "STP10": 0.1,
-                }
-            },
-        },
-    ),
     ## grouped region of the practice
     region=patients.registered_practice_as_of(
         "index_date",
@@ -239,7 +209,7 @@ study = StudyDefinition(
     ),
     ### end stage renal disease codes incl. dialysis / transplant
     esrf=patients.with_these_clinical_events(
-        ckd_codes,
+        esrf_codes,
         on_or_before="index_date",
         return_last_date_in_period=True,
         include_month=True,
@@ -274,6 +244,14 @@ study = StudyDefinition(
         return_first_date_in_period=True,
         include_month=True,
     ),
+    ## stroke
+    stroke=patients.with_these_clinical_events(
+        stroke_codes,
+        on_or_before="index_date",
+        return_first_date_in_period=True,
+        include_month=True,
+    ),
+
     ## varaibles to define flu vaccination status 
     ### flu vaccine in tpp
     flu_vaccine_tpp_table=patients.with_tpp_vaccination_record(
@@ -314,4 +292,28 @@ study = StudyDefinition(
         flu_vaccine_clinical
         """,
     ),
+
+    # OUTCOMES 
+
+    ## tpp death
+    tpp_death_date=patients.with_death_recorded_in_primary_care(
+        on_or_after="index_date",
+        returning="date_of_death",
+        date_format="YYYY-MM-DD",
+        return_expectations={"date": {"earliest": "2020-02-01"},
+                            "rate" : "exponential_increase"
+                            }, 
+    ), 
+
+    ## ons death 
+    ons_covid_death_date=patients.with_these_codes_on_death_certificate(
+       covid_codelist,
+       on_or_after="index_date",
+       match_only_underlying_cause=False,
+       returning="date_of_death",
+       date_format="YYYY-MM-DD",
+       return_expectations={"date": {"earliest": "2020-02-01"},
+                            "rate" : "exponential_increase"
+                            }, 
+    ),  
 )
