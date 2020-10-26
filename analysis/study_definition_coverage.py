@@ -8,8 +8,6 @@ from cohortextractor import (
     combine_codelists
 )
 
-## CODE LISTS
-# All codelist are held within the codelist/ folder.
 from codelists import *
 
 study = StudyDefinition(
@@ -19,11 +17,13 @@ study = StudyDefinition(
         "rate": "exponential_increase",
         "incidence" : 0.2
     },
-    # This line defines the study population
+
+    # select all patients alive on the index date 
     population=patients.registered_with_one_practice_between(
-        "2020-01-01", "2020-02-01"
+        "2020-02-01", "2020-02-01"
     ),
 
+    # only required variable is MSOA 
     msoa=patients.registered_practice_as_of(
         "2020-02-01",
         returning="msoa_code",
