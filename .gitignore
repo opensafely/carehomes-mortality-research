@@ -6,3 +6,7 @@ __pycache__
 output/*
 analysis/outfiles/*
 analysis/logfiles/*
+.Rproj.user
+.Rhistory
+*.xlsx 
+*.Rproj
