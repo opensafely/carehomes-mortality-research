@@ -8,3 +8,5 @@ analysis/outfiles/*
 analysis/logfiles/*
 .Rhistory
 .Rproj.user/*
+*.Rproj
+data/*
