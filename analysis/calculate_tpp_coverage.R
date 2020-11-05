@@ -23,10 +23,9 @@ sink("./analysis/logfiles/calculate_tpp_coverage.txt, type = output")
 #   - total population estimates per MSOA
 #   - population estimates by single year age
 
-##-- Create a vector with the different datasets to be read in 
-##-- Use locally only
-args <- c("./output/input_coverage.csv","./data/msoa_pop.csv") 
-##-- Allow arguments entered from the command line 
+##-- Create a vector with the different datasets to be read in (local only)
+# args <- c("./output/input_coverage.csv","./data/msoa_pop.csv") 
+##-- Allow arguments entered from the command line (leave for server run)
 args = commandArgs(trailingOnly=TRUE)
 
 ##-- TPP  population
@@ -42,6 +41,7 @@ msoa_pop <- fread(args[2], data.table = FALSE, na.strings = "") %>%
   select(msoa, msoa_pop, `70+`) 
 
 ##-- Count TPP patients per MSOA and merge in denominator 
+#    merge generates error messages due to variable types, this is ok 
 input %>%
   group_by(msoa) %>%
   count(name = "tpp_pop") %>%
