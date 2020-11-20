@@ -10,3 +10,5 @@ analysis/logfiles/*
 .Rproj.user/*
 *.Rproj
 data/*
+.Rproj.user
+*.ipynb_checkpoints/*
