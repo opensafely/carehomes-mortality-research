@@ -10,3 +10,6 @@ analysis/logfiles/*
 .Rhistory
 *.xlsx 
 *.Rproj
+data/*
+*.csv
+*.rds
