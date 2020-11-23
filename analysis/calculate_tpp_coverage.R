@@ -10,10 +10,10 @@
 # Housekeeping  -----------------------------------------------------------
 
 ##-- Load packages 
-pacman::p_load("tidyverse", "data.table", "dtplyr", "zoo")
-
-##-- Redirect output to a log file 
-sink("./analysis/logfiles/calculate_tpp_coverage.txt, type = output")
+library(tidyverse)
+library(data.table)
+library(dtplyr)
+library(zoo)
 
 # Load Data ---------------------------------------------------------------
 
@@ -24,9 +24,9 @@ sink("./analysis/logfiles/calculate_tpp_coverage.txt, type = output")
 #   - population estimates by single year age
 
 ##-- Create a vector with the different datasets to be read in (local only)
-# args <- c("./output/input_coverage.csv","./data/msoa_pop.csv") 
+args <- c("../output/input_coverage.csv","../data/msoa_pop.csv") 
 ##-- Allow arguments entered from the command line (leave for server run)
-args = commandArgs(trailingOnly=TRUE)
+# args = commandArgs(trailingOnly=TRUE)
 
 ##-- TPP  population
 input <- fread(args[1], data.table = FALSE, na.strings = "") %>%
@@ -50,7 +50,6 @@ input %>%
 
 ##-- Output datasets 
 
-saveRDS(tpp_cov, file = "./data/tpp_msoa_coverage.rds")
-write.csv(tpp_cov, "./data/tpp_msoa_coverage.csv", row.names = FALSE)
+saveRDS(tpp_cov, file = "../data/tpp_msoa_coverage.rds")
+write.csv(tpp_cov, "../data/tpp_msoa_coverage.csv", row.names = FALSE)
 
-sink() 
