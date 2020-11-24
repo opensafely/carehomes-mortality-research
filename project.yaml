@@ -14,7 +14,7 @@ actions:
     run: cohortextractor:latest generate_cohort --study-definition study_definition_coverage
     outputs:
       highly_sensitive:
-        cohort: output/input_coverage
+        cohort: output/input_coverage.csv
 
   calculate_coverage: 
     run: r:latest analysis/run_calculate_tpp_coverage.R output/input_coverage.csv data/msoa_pop.csv
@@ -24,7 +24,7 @@ actions:
         log: analysis/logfiles/calculate_tpp_coverage.txt
       highly_sensitive:
         data: data/tpp_msoa_coverage.csv
-
+        
   feasibility_checks: 
     run: r:latest analysis/run_feasibility_checks.R output/input.csv data/tpp_msoa_coverage.csv
     needs: [generate_cohort, calculate_coverage]
@@ -44,7 +44,7 @@ actions:
 
 
   run_all:
-    needs: [generate_cohort]
+    needs: [feasibility_checks]
     # In order to be valid this action needs to define a run commmand and some
     # output. We don't really care what these are but the below does the trick.
     # In a future release of the platform, this special action won't need to be

@@ -26,7 +26,7 @@ library(zoo)
 ## (local, comment out server)
 # args <- c("../output/input_coverage.csv","../data/msoa_pop.csv") 
 ## (server, comment out locally)
-# args = commandArgs(trailingOnly=TRUE)
+args = commandArgs(trailingOnly=TRUE)
 
 ##-- TPP  population
 input <- fread(args[1], data.table = FALSE, na.strings = "") %>%
@@ -50,5 +50,5 @@ input %>%
 
 ##-- Output datasets 
 
-write.csv(tpp_cov, "../data/tpp_msoa_coverage.csv", row.names = FALSE)
+write.csv(tpp_cov, "./data/tpp_msoa_coverage.csv", row.names = FALSE)
 
