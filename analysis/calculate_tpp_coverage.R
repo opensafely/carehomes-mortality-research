@@ -23,9 +23,9 @@ library(zoo)
 #   - total population estimates per MSOA
 #   - population estimates by single year age
 
-##-- Create a vector with the different datasets to be read in (local only)
-args <- c("../output/input_coverage.csv","../data/msoa_pop.csv") 
-##-- Allow arguments entered from the command line (leave for server run)
+## (local, comment out server)
+# args <- c("../output/input_coverage.csv","../data/msoa_pop.csv") 
+## (server, comment out locally)
 # args = commandArgs(trailingOnly=TRUE)
 
 ##-- TPP  population
@@ -50,6 +50,5 @@ input %>%
 
 ##-- Output datasets 
 
-saveRDS(tpp_cov, file = "../data/tpp_msoa_coverage.rds")
 write.csv(tpp_cov, "../data/tpp_msoa_coverage.csv", row.names = FALSE)
 

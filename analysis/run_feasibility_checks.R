@@ -1,25 +1,19 @@
 # Program Information  ----------------------------------------------------
 
-# Program:     run all 
+# Program:     run feasibility_checks 
 # Author:      Anna Schultze 
 # Description: run all r scripts in order and print console output to logs 
-# Edits:      
+# Edits:
 
-# generate the coverage 
+# create directories 
+# (server only, comment out locally due to wd discrepancy)
 
-logfile <- file("./logfiles/calculate_tpp_coverage.txt")
-sink(logfile, append=TRUE)
-sink(logfile, append=TRUE, type="message")
-
-source("calculate_tpp_coverage.R", echo=TRUE, max.deparse.length=10000)
-
-sink() 
-sink(type="message")
-
+dir.create(file.path("./analysis/outfiles"), showWarnings = FALSE)
+dir.create(file.path("./analysis/logfiles"), showWarnings = FALSE)
 
 # run the feasibility checks 
 
-logfile <- file("./logfiles/feasibility_checks.txt")
+logfile <- file("./analysis/logfiles/feasibility_checks.txt")
 sink(logfile, append=TRUE)
 sink(logfile, append=TRUE, type="message")
 

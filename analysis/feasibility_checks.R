@@ -15,10 +15,11 @@ library(knitr)
 library(lubridate)
 
 # Read in Data  -----------------------------------------------------------
-## (locally, comment out for server)
-args <- c("../output/input.csv","../data/tpp_msoa_coverage.csv") 
-# (server, comment out locally)
-# args = commandArgs(trailingOnly=TRUE)
+## (local, comment out server)
+## running through project.yaml will make the script 'see' a different wd
+# args <- c("../output/input.csv","../data/tpp_msoa_coverage.csv") 
+## (server, comment out locally)
+args = commandArgs(trailingOnly=TRUE)
 
 input <- fread(args[1], data.table = FALSE, na.strings = "")
 msoa_coverage <- fread(args[2], data.table = FALSE, na.strings = "")
