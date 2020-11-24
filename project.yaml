@@ -31,16 +31,16 @@ actions:
     outputs: 
       moderately_sensitive: 
         log: analysis/logfiles/feasibility_checks.txt
-        table1a: analysis/outfiles/table1a.txt
-        table1b: analysis/outfiles/table1b.txt
-        table1c: analysis/outfiles/table1c.txt
-        figure1a: analysis/outfiles/figure1a.png
-        figure1b: analysis/outfiles/figure1b.png
-        figure1c: analysis/outfiles/figure1c.png
-        table2: analysis/outfiles/table2.txt
-        table3: analysis/outfiles/table3.txt
-        figure2: analysis/outfiles/figure2.png
-        table4: analysis/outfiles/table4.txt
+        table1a: outfiles/table1a.txt
+        table1b: outfiles/table1b.txt
+        table1c: outfiles/table1c.txt
+        figure1a: outfiles/figure1a.png
+        figure1b: outfiles/figure1b.png
+        figure1c: outfiles/figure1c.png
+        table2: outfiles/table2.txt
+        table3: outfiles/table3.txt
+        figure2: outfiles/figure2.png
+        table4: outfiles/table4.txt
 
 
   run_all:
