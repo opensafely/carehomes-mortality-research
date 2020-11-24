@@ -33,7 +33,8 @@ actions:
         log: analysis/logfiles/feasibility_checks.txt
         table1a: outfiles/table1a.txt
         table1b: outfiles/table1b.txt
-        table1c: outfiles/table1c.txt
+        # commented out as file not currently being produced
+        # table1c: outfiles/table1c.txt
         figure1a: outfiles/figure1a.png
         figure1b: outfiles/figure1b.png
         figure1c: outfiles/figure1c.png
