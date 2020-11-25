@@ -19,7 +19,7 @@ logfile <- file("./analysis/logfiles/calculate_tpp_coverage.txt")
 sink(logfile, append=TRUE)
 sink(logfile, append=TRUE, type="message")
 
-source("calculate_tpp_coverage.R", echo=TRUE, max.deparse.length=10000)
+source("./analysis/calculate_tpp_coverage.R", echo=TRUE, max.deparse.length=10000)
 
 sink() 
 sink(type="message")
