@@ -5,12 +5,6 @@
 # Description: run all r scripts in order and print console output to logs 
 # Edits:
 
-# create directories 
-# (server only, comment out locally due to wd discrepancy)
-
-dir.create(file.path("./analysis/outfiles"), showWarnings = FALSE)
-dir.create(file.path("./analysis/logfiles"), showWarnings = FALSE)
-
 # run the feasibility checks 
 
 logfile <- file("./analysis/logfiles/feasibility_checks.txt")

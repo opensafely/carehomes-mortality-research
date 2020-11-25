@@ -10,9 +10,6 @@
 # create directories 
 # (server only, comment out locally due to wd discrepancy)
 
-dir.create(file.path("./analysis/outfiles"), showWarnings = FALSE)
-dir.create(file.path("./analysis/logfiles"), showWarnings = FALSE)
-
 # run the calculate_tpp_coverage
 
 logfile <- file("./analysis/logfiles/calculate_tpp_coverage.txt")
