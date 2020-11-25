@@ -15,10 +15,11 @@ library(knitr)
 library(lubridate)
 
 # Read in Data  -----------------------------------------------------------
-## (locally, comment out for server)
-args <- c("../output/input.csv","../data/tpp_msoa_coverage.csv") 
-# (server, comment out locally)
-# args = commandArgs(trailingOnly=TRUE)
+## (local, comment out server)
+## running through project.yaml will make the script 'see' a different wd
+# args <- c("../output/input.csv","../data/tpp_msoa_coverage.csv") 
+## (server, comment out locally)
+args = commandArgs(trailingOnly=TRUE)
 
 input <- fread(args[1], data.table = FALSE, na.strings = "")
 msoa_coverage <- fread(args[2], data.table = FALSE, na.strings = "")
@@ -35,7 +36,7 @@ table1a <- input  %>%
   adorn_totals()
   
 knitr::kable(table1a, col.names = c("Type of Care Home", "N", "Percent"))
-write.table(table1a, file = "./outfiles/table1a.txt", sep = "\t")
+write.table(table1a, file = "./analysis/outfiles/table1a.txt", sep = "\t")
 
 # number of care homes of different types 
 table1b <- input  %>% 
@@ -48,7 +49,7 @@ table1b <- input  %>%
   adorn_totals() 
 
 knitr::kable(table1b, col.names = c("Type of Care Home", "N", "Percent"))
-write.table(table1b, file = "./outfiles/table1b.txt", sep = "\t")
+write.table(table1b, file = "./analysis/outfiles/table1b.txt", sep = "\t")
 
 # Data Quality Checks  ----------------------------------------------------
 
@@ -103,7 +104,7 @@ figure1a <- ch_coverage_all  %>%
         panel.grid.major.y = element_line(color = "gainsboro")
   )
 
-png(filename = "./outfiles/figure1a.png")
+png(filename = "./analysis/outfiles/figure1a.png")
 figure1a
 dev.off()
 
@@ -123,7 +124,7 @@ figure1b <- ch_coverage_all  %>%
         panel.grid.major.y = element_line(color = "gainsboro")
   )
 
-png(filename = "./outfiles/figure1b.png")
+png(filename = "./analysis/outfiles/figure1b.png")
 figure1b
 dev.off()
 
@@ -143,7 +144,7 @@ figure1c <- ch_coverage_all  %>%
         panel.grid.major.y = element_line(color = "gainsboro")
   )
 
-png(filename = "./outfiles/figure1c.png")
+png(filename = "./analysis/outfiles/figure1c.png")
 figure1c
 dev.off()
 
@@ -186,7 +187,7 @@ table2 <- table2a %>%
   left_join(table2b, by  = "tpp_coverage_cat")
 
 knitr::kable(table2, col.names = c("TPP coverage", "Number of Care Homes", "Percentage of Care Homes", "Number of Residents", "Percentage of Residents"))
-write.table(table2, file = "./outfiles/table2.txt", sep = "\t")
+write.table(table2, file = "./analysis/outfiles/table2.txt", sep = "\t")
 
 # number of care homes with different % of residents covered by non TPP software
 ## d leon requested inverse of above for clarity 
@@ -208,7 +209,7 @@ table3 <- table3a %>%
   left_join(table3b, by  = "nontpp_coverage_cat")
 
 knitr::kable(table3, col.names = c("Non TPP coverage", "Number of Care Homes", "Percentage of Care Homes", "Number of Residents", "Percentage of Residents"))
-write.table(table3, file = "./outfiles/table3.txt", sep = "\t")
+write.table(table3, file = "./analysis/outfiles/table3.txt", sep = "\t")
 
 # plot tpp vs msoa coverage 
 # for some reason right and bottom border line not removed?? troubleshoot with team
@@ -227,7 +228,7 @@ figure2 <- ch_coverage_all  %>%
         panel.border = element_blank(),
         panel.grid.major.y = element_line(color = "gainsboro")) 
 
-png(filename = "./outfiles/figure2.png")
+png(filename = "./analysis/outfiles/figure2.png")
 figure2
 dev.off()
 
@@ -253,7 +254,7 @@ table4 <- date_check  %>%
   adorn_pct_formatting() 
 
 knitr::kable(table4, col.names = c("Death Date Agreement", "N", "%", "Non missing %"))
-write.table(table4, file = "./outfiles/table4.txt", sep = "\t")
+write.table(table4, file = "./analysis/outfiles/table4.txt", sep = "\t")
 
 print("Difference between death date in TPP and ONS, where this exists")
 summary(date_check$date_difference)

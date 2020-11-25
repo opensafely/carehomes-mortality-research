@@ -1,0 +1,55 @@
+version: "3.0"
+
+expectations:
+  population_size: 1000
+
+actions:
+  generate_cohort:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition
+    outputs:
+      highly_sensitive:
+        cohort: output/input.csv
+
+  generate_cohort_coverage:
+    run: cohortextractor:latest generate_cohort --study-definition study_definition_coverage
+    outputs:
+      highly_sensitive:
+        cohort: output/input_coverage.csv
+
+  calculate_coverage: 
+    run: r:latest analysis/run_calculate_tpp_coverage.R output/input_coverage.csv data/msoa_pop.csv
+    needs: [generate_cohort_coverage]
+    outputs: 
+      moderately_sensitive: 
+        log: analysis/logfiles/calculate_tpp_coverage.txt
+      highly_sensitive:
+        data: data/tpp_msoa_coverage.csv
+        
+  feasibility_checks: 
+    run: r:latest analysis/run_feasibility_checks.R output/input.csv data/tpp_msoa_coverage.csv
+    needs: [generate_cohort, calculate_coverage]
+    outputs: 
+      moderately_sensitive: 
+        log: analysis/logfiles/feasibility_checks.txt
+        table1a: analysis/outfiles/table1a.txt
+        table1b: analysis/outfiles/table1b.txt
+        figure1a: analysis/outfiles/figure1a.png
+        figure1b: analysis/outfiles/figure1b.png
+        figure1c: analysis/outfiles/figure1c.png
+        table2: analysis/outfiles/table2.txt
+        table3: analysis/outfiles/table3.txt
+        figure2: analysis/outfiles/figure2.png
+        table4: analysis/outfiles/table4.txt
+
+
+  run_all:
+    needs: [feasibility_checks]
+    # In order to be valid this action needs to define a run commmand and some
+    # output. We don't really care what these are but the below does the trick.
+    # In a future release of the platform, this special action won't need to be
+    # defined at all.
+    run: cohortextractor:latest --version
+    outputs:
+      moderately_sensitive:
+        whatever: project.yaml
+
